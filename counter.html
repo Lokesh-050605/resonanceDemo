@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visit Counter — Resonance Project</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ffffff, #f0f6ff);
+      min-height: 100vh;
+      color: #222;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .card {
+      background: white;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 6px 30px rgba(20,30,80,0.08);
+      text-align:center;
+      max-width: 420px;
+      width: 100%;
+    }
+    h1 { margin: 0 0 6px 0; color: #2b4eff; font-size: 1.6rem; }
+    p { color: #555; margin: 0 0 18px 0; }
+    .count {
+      font-size: 2.8rem;
+      margin: 6px 0 12px 0;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .note { font-size: 0.9rem; color: #666; }
+    .refresh { margin-top: 14px; display:inline-block; padding:8px 14px; border-radius:8px; background:#2b4eff; color:#fff; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>👀 Total Visits</h1>
+    <p>Count for the demo redirect page (global)</p>
+    <div id="count" class="count">—</div>
+    <div id="when" class="note"></div>
+    <a class="refresh" id="refreshBtn" href="#">Refresh</a>
+    <div style="margin-top:12px;">
+      <a href="index.html" style="color:#2b4eff; text-decoration:underline;">Back to demo page</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const namespace = "resonance-project";
+      const key = "demo-page";
+      const getUrl = `https://api.countapi.xyz/get/${encodeURIComponent(namespace)}/${encodeURIComponent(key)}`;
+      const countEl = document.getElementById("count");
+      const whenEl = document.getElementById("when");
+      const refreshBtn = document.getElementById("refreshBtn");
+
+      function showLoading() {
+        countEl.textContent = "Loading…";
+        whenEl.textContent = "";
+      }
+      function showError() {
+        countEl.textContent = "Error";
+        whenEl.textContent = "Could not fetch count. Maybe service is down or there is no count yet.";
+      }
+
+      function fetchCount() {
+        showLoading();
+        fetch(getUrl, { method: "GET", mode: "cors" })
+          .then(resp => {
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            return resp.json();
+          })
+          .then(data => {
+            // data.value contains the count when successful.
+            if (data && typeof data.value !== "undefined") {
+              countEl.textContent = data.value;
+              whenEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
+            } else {
+              // If API responds but no value, show 0
+              countEl.textContent = "0";
+              whenEl.textContent = "No visits recorded yet.";
+            }
+          })
+          .catch(err => {
+            console.error("Failed to load count:", err);
+            // Try reading local fallback (if index.html incremented localStorage)
+            try {
+              const local = localStorage.getItem("localVisitCount");
+              if (local) {
+                countEl.textContent = local + " (local fallback)";
+                whenEl.textContent = "Using client-side fallback value.";
+                return;
+              }
+            } catch (e) { /* ignore */ }
+            showError();
+          });
+      }
+
+      refreshBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        fetchCount();
+      });
+
+      // initial fetch
+      fetchCount();
+    })();
+  </script>
+</body>
+</html>
+
