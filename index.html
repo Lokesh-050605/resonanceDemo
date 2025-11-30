@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resonance Project Demo</title>
 
-  <meta http-equiv="refresh" content="0; url=https://youtu.be/A1gxIudb3yo" />
-
   <style>
     body {
       margin: 0;
@@ -21,73 +19,80 @@
       color: #333;
       text-align: center;
     }
-
-    header {
-      margin-bottom: 20px;
-    }
-
+    header { margin-bottom: 20px; }
     h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
       color: #2b4eff;
       letter-spacing: 1px;
     }
-
-    p {
-      font-size: 1.2rem;
-      color: #555;
-      margin-bottom: 30px;
-      max-width: 600px;
+    p { font-size: 1.1rem; color: #555; margin-bottom: 30px; max-width: 600px; }
+    .small {
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 8px;
     }
-
-    iframe {
-      width: 80%;
-      max-width: 800px;
-      height: 450px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s;
-    }
-
-    iframe:hover {
-      transform: scale(1.02);
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 0.9rem;
-      color: #777;
-    }
-
-    .btn {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 12px 25px;
-      background: #2b4eff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-
-    .btn:hover {
-      background: #1e36b6;
-    }
+    .btn { display: inline-block; margin-top: 15px; padding: 12px 25px; background: #2b4eff; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background 0.3s; }
+    .btn:hover { background: #1e36b6; }
+    footer { margin-top: 30px; font-size: 0.9rem; color: #777; }
   </style>
 </head>
 <body>
   <header>
     <h1>🚀 Our Project Demo</h1>
-    <p>Watch the demonstration video of our innovative solution </p>
+    <p>Watch the demonstration video of our innovative solution.</p>
+    <p class="small">You will be redirected to YouTube shortly — the visit will still be counted.</p>
   </header>
 
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/A1gxIudb3yo?si=RdxccGC9Nu4xY0ro" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <!-- Visible video iframe (optional). It will be shown briefly before redirecting. -->
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/dke0Vrl8nCs?si=a9HWm6oRNvW-vdFe" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-  <a class="btn" href="https://youtu.be/A1gxIudb3yo" target="_blank">🔗 Open on YouTube</a>
+  <div style="margin-top: 18px;">
+    <a class="btn" id="openLink" href="https://youtu.be/dke0Vrl8nCs?si=9je_ji4DhEzfSiw5" target="_blank" rel="noreferrer">🔗 Open on YouTube (no redirect)</a>
+  </div>
 
   <footer>
-    <p>© 2025 Team Trio</p>
+    <p>© 2025 Team Trio — <a href="counter.html" style="color:inherit; text-decoration:underline;">See global visit count</a></p>
   </footer>
+
+  <script>
+    (function () {
+      // Change namespace/key if you want your own counter grouping
+      const namespace = "resonance-project";
+      const key = "demo-page";
+      const hitUrl = `https://api.countapi.xyz/hit/${encodeURIComponent(namespace)}/${encodeURIComponent(key)}`;
+
+      // Try to increment the global counter (CountAPI). We call it immediately.
+      // We'll still redirect to YouTube after the request is started (no long waits).
+      fetch(hitUrl, { method: "GET", mode: "cors" })
+        .then(resp => resp.json())
+        .then(data => {
+          // data.value contains the new count (if successful).
+          console.log("CountAPI response:", data);
+          // Optional: show a tiny overlay or console log (we're redirecting anyway)
+        })
+        .catch(err => {
+          // If CountAPI fails, fall back to localStorage increment so visits aren't entirely lost client-side
+          console.warn("CountAPI failed; falling back to local increment.", err);
+          try {
+            let local = parseInt(localStorage.getItem("localVisitCount") || "0", 10);
+            local++;
+            localStorage.setItem("localVisitCount", local);
+            console.log("Local fallback count:", local);
+          } catch (e) { /* ignore */ }
+        })
+        .finally(() => {
+          // Redirect after a short delay — enough time to trigger the fetch.
+          // Keep delay small so user is taken to YouTube quickly.
+          setTimeout(() => {
+            window.location.href = "https://youtu.be/dke0Vrl8nCs?si=9je_ji4DhEzfSiw5";
+          }, 250); // 250ms delay
+        });
+
+      // NOTE: If you want the redirect to open in a new tab instead of replacing this page,
+      // you could use window.open("https://youtu.be/A1gxIudb3yo", "_blank");
+      // but the above replaces the current tab.
+    })();
+  </script>
 </body>
 </html>
